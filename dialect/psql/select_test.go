@@ -110,6 +110,15 @@ func TestSelect(t *testing.T) {
 			ExpectedSQL:  "SELECT id, name FROM users WHERE (id, employee_id) IN (($1, $2), ($3, $4))",
 			ExpectedArgs: []any{100, 200, 300, 400},
 		},
+		"function column with alias": {
+			Doc:          "Function column with alias",
+			ExpectedSQL:  `SELECT upper(name) AS "x" FROM users`,
+			ExpectedArgs: nil,
+			Query: psql.Select(
+				sm.Columns(psql.F("upper", "name").As("x y")),
+				sm.From("users"),
+			),
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)

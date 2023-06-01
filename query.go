@@ -108,3 +108,12 @@ func (q BaseQuery[E]) Build() (string, []any, error) {
 func (q BaseQuery[E]) BuildN(start int) (string, []any, error) {
 	return BuildN(q, start)
 }
+
+// Build a query with named parameters, useful for Prepare
+func (q BaseQuery[E]) BuildNamed() (string, *NamedParams, error) {
+	query, params, err := q.Build()
+	if err != nil {
+		return "", nil, err
+	}
+	return query, &NamedParams{params: params}, nil
+}

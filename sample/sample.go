@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	main2()
+	main1()
 }
 
 func main1() {
@@ -26,6 +26,13 @@ func main1() {
 	fmt.Println(params.ParamsNullable(map[string]any{
 		"in1": 15,
 	}))
+
+	// SELECT
+	// id, name
+	// FROM users
+	// WHERE ("id" IN ($1, $2, $3))
+	//
+	// [15 200 300]
 }
 
 func main2() {
@@ -41,4 +48,9 @@ func main2() {
 	fmt.Println(params.ParamsNullable(map[string]any{
 		"in1": 15,
 	}))
+
+	// INSERT INTO actor ("first_name", "last_name")
+	// VALUES ($1, $2)
+	//
+	// [LAST_NAME 15]
 }

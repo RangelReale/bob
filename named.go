@@ -28,13 +28,8 @@ func (n NamedParams) getParams(values map[string]any, errorIfNotSet bool) ([]any
 		switch x := param.(type) {
 		case NamedArg:
 			paramName = x.Name
-		case string:
-			paramName = x
 		default:
-			if errorIfNotSet {
-				return nil, fmt.Errorf("unsupported param type %T", param)
-			}
-			ret = append(ret, nil)
+			ret = append(ret, x)
 			continue
 		}
 

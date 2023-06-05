@@ -114,10 +114,10 @@ func (q BaseQuery[E]) BuildN(start int) (string, []any, error) {
 	return BuildN(q, start)
 }
 
-func (q BaseQuery[E]) Prepare() (PreparedQuery, error) {
+func (q BaseQuery[E]) Prepared() (PreparedQuery, error) {
 	return BuildPrepared(q)
 }
 
-func (q BaseQuery[E]) PrepareN(start int) (PreparedQuery, error) {
+func (q BaseQuery[E]) PreparedN(start int) (PreparedQuery, error) {
 	return BuildPreparedN(q, start)
 }

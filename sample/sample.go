@@ -27,7 +27,7 @@ func main1() {
 		sm.Where(psql.Raw("id >= ?", psql.NamedArg("id1"))),
 	)
 
-	prepared, err := query.Prepare()
+	prepared, err := query.Prepared()
 	if err != nil {
 		panic(err)
 	}
@@ -61,7 +61,7 @@ func main2() {
 		im.Values(psql.Arg(psql.NamedArg("in1"), psql.NamedArg("in2"))),
 	)
 
-	prepared, err := query.Prepare()
+	prepared, err := query.Prepared()
 	if err != nil {
 		panic(err)
 	}
@@ -69,6 +69,39 @@ func main2() {
 	args, err := prepared.Build(map[string]any{
 		"in1": 15,
 		"in2": "LAST_NAME",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(prepared.SQL())
+	fmt.Println(args)
+
+	// INSERT INTO actor ("first_name", "last_name")
+	// VALUES ($1, $2)
+	//
+	// [15 LAST_NAME]
+}
+
+type Main3Args struct {
+	FirstName string
+	LastName  string
+}
+
+func main3() {
+	query := psql.Insert(
+		im.Into("actor", "first_name", "last_name"),
+		im.Values(psql.ArgNamed("first_name", "last_name")),
+	)
+
+	prepared, err := query.Prepared()
+	if err != nil {
+		panic(err)
+	}
+
+	args, err := prepared.Build(Main3Args{
+		FirstName: "JOHN",
+		LastName:  "CENA",
 	})
 	if err != nil {
 		panic(err)
@@ -111,7 +144,7 @@ func maindb() {
 			sm.Limit(psql.ArgNamed("limit")),
 		)
 
-		prepared, err := query.Prepare()
+		prepared, err := query.Prepared()
 		if err != nil {
 			panic(err)
 		}

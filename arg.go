@@ -13,10 +13,11 @@ func NamedArg(name string) NamedArgument {
 	return NamedArgument{Name: name}
 }
 
-func ConvertNamedArgument(nargs []NamedArgument, args any) ([]any, error) {
+func NamedArgumentToArray(nargs []NamedArgument, args any) ([]any, error) {
 	var argMap map[string]any
 
 	switch xargs := args.(type) {
+	// TODO: support struct
 	case map[string]any:
 		argMap = xargs
 	}

@@ -13,7 +13,7 @@ func NamedArg(name string) NamedArgument {
 	return NamedArgument{Name: name}
 }
 
-func NamedArgumentBuild(nargs []NamedArgument, args any) ([]any, error) {
+func ConvertNamedArgument(nargs []NamedArgument, args any) ([]any, error) {
 	var argMap map[string]any
 
 	switch xargs := args.(type) {

@@ -13,7 +13,7 @@ type preparedQuery struct {
 }
 
 func (p preparedQuery) Query(args any) QueryWriter {
-	queryArgs, err := NamedArgumentBuild(p.args, args)
+	queryArgs, err := ConvertNamedArgument(p.args, args)
 	if err != nil {
 		return &preparedQueryWriter{err: err}
 	}
@@ -24,7 +24,7 @@ func (p preparedQuery) Query(args any) QueryWriter {
 }
 
 func (p preparedQuery) Build(args any) (string, []any, error) {
-	queryArgs, err := NamedArgumentBuild(p.args, args)
+	queryArgs, err := ConvertNamedArgument(p.args, args)
 	if err != nil {
 		return "", nil, err
 	}

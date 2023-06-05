@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/stephenafamo/bob"
 	"strings"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -23,14 +24,20 @@ func main1() {
 		sm.From("users"),
 		sm.Where(psql.Quote("id").In(psql.Arg(psql.NamedArg("in1"), 200, 300))),
 	)
-	queryStr, params, err := query.BuildNamed()
+	prepared, err := query.Prepare()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(queryStr)
-	fmt.Println(params.ParamsNullable(map[string]any{
+
+	queryStr, args, err := prepared.Build(map[string]any{
 		"in1": 15,
-	}))
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(queryStr)
+	fmt.Println(args)
 
 	// SELECT
 	// id, name
@@ -45,14 +52,21 @@ func main2() {
 		im.Into("actor", "first_name", "last_name"),
 		im.Values(psql.Arg("LAST_NAME", psql.NamedArg("in1"))),
 	)
-	queryStr, params, err := query.BuildNamed()
+
+	prepared, err := query.Prepare()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(queryStr)
-	fmt.Println(params.ParamsNullable(map[string]any{
+
+	queryStr, args, err := prepared.Build(map[string]any{
 		"in1": 15,
-	}))
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(queryStr)
+	fmt.Println(args)
 
 	// INSERT INTO actor ("first_name", "last_name")
 	// VALUES ($1, $2)
@@ -66,6 +80,8 @@ func maindb() {
 	if err != nil {
 		panic(err)
 	}
+
+	bdb := bob.NewDB(db)
 
 	type Data struct {
 		FirstName string
@@ -85,20 +101,27 @@ func maindb() {
 			sm.Offset(psql.Arg(items[0])),
 			sm.Limit(psql.Arg(items[1])),
 		)
-		sql, params, err := query.Build()
+		prepared, err := query.Prepare()
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(sql)
-		fmt.Println(params)
 
-		rows, err := db.Query(sql, params...)
-		if err != nil {
-			panic(err)
-		}
-		defer rows.Close()
+		//sql, params, err := query.Build()
+		//if err != nil {
+		//	panic(err)
+		//}
+		//fmt.Println(sql)
+		//fmt.Println(params)
+		//
+		//rows, err := db.Query(sql, params...)
+		//if err != nil {
+		//	panic(err)
+		//}
+		//defer rows.Close()
+		//
+		//data, err := scan.AllFromRows(context.Background(), dataMapper, rows)
 
-		data, err := scan.AllFromRows(context.Background(), dataMapper, rows)
+		data, err := bob.All(context.Background(), bdb, prepared.Query(nil), dataMapper)
 		if err != nil {
 			panic(err)
 		}

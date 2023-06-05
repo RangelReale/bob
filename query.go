@@ -9,16 +9,26 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
+type QueryWriter interface {
+	// start is the index of the args, usually 1.
+	// it is present to allow re-indexing in cases of a subquery
+	// The method returns the value of any args placed
+	WriteQuery(w io.Writer, start int) (args []any, err error)
+}
+
 type Query interface {
 	// It should satisfy the Expression interface so that it can be used
 	// in places such as a sub-select
 	// However, it is allowed for a query to use its own dialect and not
 	// the dialect given to it
 	Expression
-	// start is the index of the args, usually 1.
-	// it is present to allow re-indexing in cases of a subquery
-	// The method returns the value of any args placed
-	WriteQuery(w io.Writer, start int) (args []any, err error)
+
+	QueryWriter
+}
+
+type PreparedQuery interface {
+	Query(args map[string]any) QueryWriter
+	Build(args map[string]any) (string, []any, error)
 }
 
 type Mod[T any] interface {
@@ -107,4 +117,25 @@ func (q BaseQuery[E]) Build() (string, []any, error) {
 // Convinient function to build query from a point
 func (q BaseQuery[E]) BuildN(start int) (string, []any, error) {
 	return BuildN(q, start)
+}
+
+func (q BaseQuery[E]) Prepare() (PreparedQuery, error) {
+	return BuildPrepared(q)
+}
+
+func (q BaseQuery[E]) PrepareN(start int) (PreparedQuery, error) {
+	return BuildPreparedN(q, start)
+}
+
+type preparedQuery struct {
+	query string
+	args  []any
+}
+
+func (p preparedQuery) Query(args map[string]any) QueryWriter {
+	return nil
+}
+
+func (p preparedQuery) Build(args map[string]any) (string, []any, error) {
+	return "", nil, nil
 }

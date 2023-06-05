@@ -86,6 +86,15 @@ func (e Builder[T, B]) Placeholder(n uint) T {
 	return e.Arg(make([]any, n)...)
 }
 
+func (e Builder[T, B]) NamedPlaceholder(names ...string) T {
+	var arg []any
+	for _, name := range names {
+		arg = append(arg, bob.NamedArg(name))
+	}
+
+	return e.Arg(arg...)
+}
+
 func (e Builder[T, B]) Raw(query string, args ...any) T {
 	return X[T, B](Clause{
 		query: query,

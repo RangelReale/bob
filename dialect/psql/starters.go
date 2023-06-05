@@ -62,12 +62,6 @@ func Arg(args ...any) Expression {
 	return bmod.Arg(args...)
 }
 
-func NamedArg(name string) bob.NamedArg {
-	return bob.NamedArg{
-		Name: name,
-	}
-}
-
 // SQL: ($1, $2, $3)
 // Go: psql.ArgGroup("a", "b", "c")
 func ArgGroup(args ...any) Expression {
@@ -78,6 +72,10 @@ func ArgGroup(args ...any) Expression {
 // Go: psql.Placeholder(3)
 func Placeholder(n uint) Expression {
 	return bmod.Placeholder(n)
+}
+
+func NamedPlaceholder(names ...string) Expression {
+	return bmod.NamedPlaceholder(names...)
 }
 
 // SQL: (a, b)

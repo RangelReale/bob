@@ -1,5 +1,9 @@
 package bob
 
-type NamedArg struct {
+type NamedArgument struct {
 	Name string
+}
+
+func NamedArg(name string) NamedArgument {
+	return NamedArgument{Name: name}
 }

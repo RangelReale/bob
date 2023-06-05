@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	maindb()
+	main1()
 }
 
 func main1() {
@@ -24,7 +24,7 @@ func main1() {
 		sm.Columns("id", "name"),
 		sm.From("users"),
 		sm.Where(psql.Quote("id").In(psql.ArgNamed("in1", "in2", "in3"))),
-		sm.Where(psql.Raw("id = ?", psql.NamedArg("id1"))),
+		sm.Where(psql.Raw("id >= ?", psql.NamedArg("id1"))),
 	)
 
 	prepared, err := query.Prepare()
@@ -50,15 +50,15 @@ func main1() {
 	// SELECT
 	// id, name
 	// FROM users
-	// WHERE ("id" IN ($1, $2, $3))
+	// WHERE ("id" IN ($1, $2, $3)) AND (id >= $4)
 	//
-	// [15 200 300]
+	// [15 200 300 400]
 }
 
 func main2() {
 	query := psql.Insert(
 		im.Into("actor", "first_name", "last_name"),
-		im.Values(psql.Arg("LAST_NAME", psql.NamedArg("in1"))),
+		im.Values(psql.Arg(psql.NamedArg("in1"), psql.NamedArg("in2"))),
 	)
 
 	prepared, err := query.Prepare()
@@ -68,6 +68,7 @@ func main2() {
 
 	args, err := prepared.Build(map[string]any{
 		"in1": 15,
+		"in2": "LAST_NAME",
 	})
 	if err != nil {
 		panic(err)
@@ -79,7 +80,7 @@ func main2() {
 	// INSERT INTO actor ("first_name", "last_name")
 	// VALUES ($1, $2)
 	//
-	// [LAST_NAME 15]
+	// [15 LAST_NAME]
 }
 
 func maindb() {

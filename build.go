@@ -58,7 +58,7 @@ func BuildPreparedN(q QueryWriter, start int) (PreparedQuery, error) {
 		if na, ok := arg.(NamedArgument); ok {
 			narg = append(narg, na)
 		} else {
-			return nil, fmt.Errorf("all arguments should be bob.NamedArgument for BuildPrepared")
+			return nil, fmt.Errorf("all arguments for BuildPrepared must be bob.NamedArgument")
 		}
 	}
 

@@ -23,10 +23,6 @@ func NamedArgumentToArray(nargs []NamedArgument, args any) ([]any, error) {
 	}
 
 	if argMap == nil {
-
-	}
-
-	if argMap == nil {
 		return nil, errors.New("unknown arguments type")
 	}
 

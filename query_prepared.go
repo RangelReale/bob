@@ -43,6 +43,10 @@ type preparedQueryWriter struct {
 }
 
 func (p preparedQueryWriter) WriteQuery(w io.Writer, start int) ([]any, error) {
+	if p.err != nil {
+		return nil, p.err
+	}
+
 	_, err := w.Write([]byte(p.query))
 	if err != nil {
 		return nil, err

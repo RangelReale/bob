@@ -1,6 +1,9 @@
 package bob
 
-import "bytes"
+import (
+	"bytes"
+	"fmt"
+)
 
 // MustBuild builds a query and panics on error
 // useful for initializing queries that need to be reused
@@ -24,6 +27,16 @@ func Build(q QueryWriter) (string, []any, error) {
 
 // Convinient function to build query from a point
 func BuildN(q QueryWriter, start int) (string, []any, error) {
+	query, args, err := buildN(q, start)
+	for _, arg := range args {
+		if _, ok := arg.(NamedArgument); ok {
+			return "", nil, fmt.Errorf("cannot use bob.NamedArgument with Build")
+		}
+	}
+	return query, args, err
+}
+
+func buildN(q QueryWriter, start int) (string, []any, error) {
 	b := &bytes.Buffer{}
 	args, err := q.WriteQuery(b, start)
 
@@ -35,13 +48,22 @@ func BuildPrepared(q QueryWriter) (PreparedQuery, error) {
 }
 
 func BuildPreparedN(q QueryWriter, start int) (PreparedQuery, error) {
-	query, args, err := BuildN(q, start)
+	query, args, err := buildN(q, start)
 	if err != nil {
 		return nil, err
 	}
 
+	var narg []NamedArgument
+	for _, arg := range args {
+		if na, ok := arg.(NamedArgument); ok {
+			narg = append(narg, na)
+		} else {
+			return nil, fmt.Errorf("all arguments should be bob.NamedArgument for BuildPrepared")
+		}
+	}
+
 	return preparedQuery{
 		query: query,
-		args:  args,
+		args:  narg,
 	}, nil
 }

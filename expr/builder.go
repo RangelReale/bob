@@ -77,6 +77,14 @@ func (e Builder[T, B]) Arg(vals ...any) T {
 	return X[T, B](Arg(vals...))
 }
 
+func (e Builder[T, B]) ArgNamed(names ...string) T {
+	var args []any
+	for _, name := range names {
+		args = append(args, bob.NamedArg(name))
+	}
+	return X[T, B](Arg(args...))
+}
+
 // Comma separated list of arguments surrounded by parentheses
 func (e Builder[T, B]) ArgGroup(vals ...any) T {
 	return X[T, B](ArgGroup(vals...))
@@ -91,7 +99,6 @@ func (e Builder[T, B]) NamedPlaceholder(names ...string) T {
 	for _, name := range names {
 		arg = append(arg, bob.NamedArg(name))
 	}
-
 	return e.Arg(arg...)
 }
 

@@ -62,6 +62,10 @@ func Arg(args ...any) Expression {
 	return bmod.Arg(args...)
 }
 
+func ArgNamed(names ...string) Expression {
+	return bmod.ArgNamed(names...)
+}
+
 // SQL: ($1, $2, $3)
 // Go: psql.ArgGroup("a", "b", "c")
 func ArgGroup(args ...any) Expression {

@@ -4,8 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/stephenafamo/bob"
 	"strings"
+
+	"github.com/stephenafamo/bob"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stephenafamo/bob/dialect/psql"
@@ -15,15 +16,17 @@ import (
 )
 
 func main() {
-	main1()
+	maindb()
 }
 
 func main1() {
 	query := psql.Select(
 		sm.Columns("id", "name"),
 		sm.From("users"),
-		sm.Where(psql.Quote("id").In(psql.Arg(psql.NamedArg("in1"), 200, 300))),
+		sm.Where(psql.Quote("id").In(psql.ArgNamed("in1", "in2", "in3"))),
+		sm.Where(psql.Raw("id = ?", psql.NamedArg("id1"))),
 	)
+
 	prepared, err := query.Prepare()
 	if err != nil {
 		panic(err)
@@ -31,6 +34,11 @@ func main1() {
 
 	queryStr, args, err := prepared.Build(map[string]any{
 		"in1": 15,
+		"in2": 200,
+		"in3": 300,
+		"x":   "abc",
+		"y":   "h",
+		"id1": 400,
 	})
 	if err != nil {
 		panic(err)
@@ -91,37 +99,43 @@ func maindb() {
 	dataMapper := scan.StructMapper[Data]()
 
 	for _, items := range [][2]int{{0, 4}, {2, 4}, {50, 12}} {
-		fmt.Printf("%s OFFSET %d LIMIT %d %s", strings.Repeat("=", 10), items[0], items[1], strings.Repeat("=", 10))
+		fmt.Printf("%s OFFSET %d LIMIT %d %s\n", strings.Repeat("=", 10), items[0], items[1], strings.Repeat("=", 10))
 
 		query := psql.Select(
 			sm.Columns("first_name", "last_name"),
 			sm.From("actor"),
 			sm.OrderBy("first_name"),
 			sm.OrderBy("last_name"),
-			sm.Offset(psql.Arg(items[0])),
-			sm.Limit(psql.Arg(items[1])),
+			// sm.Offset(psql.Arg(items[0])),
+			// sm.Limit(psql.Arg(items[1])),
+			sm.Offset(psql.ArgNamed("offset")),
+			sm.Limit(psql.ArgNamed("limit")),
 		)
+
 		prepared, err := query.Prepare()
 		if err != nil {
 			panic(err)
 		}
 
-		//sql, params, err := query.Build()
-		//if err != nil {
+		// sql, params, err := query.Build()
+		// if err != nil {
 		//	panic(err)
-		//}
-		//fmt.Println(sql)
-		//fmt.Println(params)
+		// }
+		// fmt.Println(sql)
+		// fmt.Println(params)
 		//
-		//rows, err := db.Query(sql, params...)
-		//if err != nil {
+		// rows, err := db.Query(sql, params...)
+		// if err != nil {
 		//	panic(err)
-		//}
-		//defer rows.Close()
+		// }
+		// defer rows.Close()
 		//
-		//data, err := scan.AllFromRows(context.Background(), dataMapper, rows)
+		// data, err := scan.AllFromRows(context.Background(), dataMapper, rows)
 
-		data, err := bob.All(context.Background(), bdb, prepared.Query(nil), dataMapper)
+		data, err := bob.All(context.Background(), bdb, prepared.Query(map[string]any{
+			"offset": items[0],
+			"limit":  items[1],
+		}), dataMapper)
 		if err != nil {
 			panic(err)
 		}

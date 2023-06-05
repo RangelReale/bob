@@ -5,7 +5,7 @@ import "io"
 type PreparedQuery interface {
 	SQL() string
 	Query(args any) QueryWriter
-	Build(args any) (string, []any, error)
+	Build(args any) ([]any, error)
 }
 
 type preparedQuery struct {
@@ -28,12 +28,12 @@ func (p preparedQuery) Query(args any) QueryWriter {
 	}
 }
 
-func (p preparedQuery) Build(args any) (string, []any, error) {
+func (p preparedQuery) Build(args any) ([]any, error) {
 	queryArgs, err := ConvertNamedArgument(p.args, args)
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
-	return p.query, queryArgs, nil
+	return queryArgs, nil
 }
 
 type preparedQueryWriter struct {

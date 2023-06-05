@@ -32,7 +32,7 @@ func main1() {
 		panic(err)
 	}
 
-	queryStr, args, err := prepared.Build(map[string]any{
+	args, err := prepared.Build(map[string]any{
 		"in1": 15,
 		"in2": 200,
 		"in3": 300,
@@ -44,7 +44,7 @@ func main1() {
 		panic(err)
 	}
 
-	fmt.Println(queryStr)
+	fmt.Println(prepared.SQL())
 	fmt.Println(args)
 
 	// SELECT
@@ -66,14 +66,14 @@ func main2() {
 		panic(err)
 	}
 
-	queryStr, args, err := prepared.Build(map[string]any{
+	args, err := prepared.Build(map[string]any{
 		"in1": 15,
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(queryStr)
+	fmt.Println(prepared.SQL())
 	fmt.Println(args)
 
 	// INSERT INTO actor ("first_name", "last_name")

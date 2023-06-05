@@ -3,6 +3,7 @@ package bob
 import "io"
 
 type PreparedQuery interface {
+	SQL() string
 	Query(args any) QueryWriter
 	Build(args any) (string, []any, error)
 }
@@ -10,6 +11,10 @@ type PreparedQuery interface {
 type preparedQuery struct {
 	query string
 	args  []NamedArgument
+}
+
+func (p preparedQuery) SQL() string {
+	return p.query
 }
 
 func (p preparedQuery) Query(args any) QueryWriter {

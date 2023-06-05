@@ -107,8 +107,6 @@ func maindb() {
 			sm.From("actor"),
 			sm.OrderBy("first_name"),
 			sm.OrderBy("last_name"),
-			// sm.Offset(psql.Arg(items[0])),
-			// sm.Limit(psql.Arg(items[1])),
 			sm.Offset(psql.ArgNamed("offset")),
 			sm.Limit(psql.ArgNamed("limit")),
 		)
@@ -117,21 +115,6 @@ func maindb() {
 		if err != nil {
 			panic(err)
 		}
-
-		// sql, params, err := query.Build()
-		// if err != nil {
-		//	panic(err)
-		// }
-		// fmt.Println(sql)
-		// fmt.Println(params)
-		//
-		// rows, err := db.Query(sql, params...)
-		// if err != nil {
-		//	panic(err)
-		// }
-		// defer rows.Close()
-		//
-		// data, err := scan.AllFromRows(context.Background(), dataMapper, rows)
 
 		data, err := bob.All(context.Background(), bdb, prepared.Query(map[string]any{
 			"offset": items[0],

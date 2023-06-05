@@ -37,3 +37,11 @@ func NamedArgumentToArray(nargs []NamedArgument, args any) ([]any, error) {
 
 	return retArgs, nil
 }
+
+func NamesToNamedArguments(names ...string) []any {
+	var args []any
+	for _, name := range names {
+		args = append(args, NamedArg(name))
+	}
+	return args
+}

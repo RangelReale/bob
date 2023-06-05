@@ -78,11 +78,7 @@ func (e Builder[T, B]) Arg(vals ...any) T {
 }
 
 func (e Builder[T, B]) ArgNamed(names ...string) T {
-	var args []any
-	for _, name := range names {
-		args = append(args, bob.NamedArg(name))
-	}
-	return X[T, B](Arg(args...))
+	return X[T, B](Arg(bob.NamesToNamedArguments(names...)...))
 }
 
 // Comma separated list of arguments surrounded by parentheses
@@ -90,16 +86,16 @@ func (e Builder[T, B]) ArgGroup(vals ...any) T {
 	return X[T, B](ArgGroup(vals...))
 }
 
+func (e Builder[T, B]) ArgNamedGroup(names ...string) T {
+	return X[T, B](ArgGroup(bob.NamesToNamedArguments(names...)...))
+}
+
 func (e Builder[T, B]) Placeholder(n uint) T {
 	return e.Arg(make([]any, n)...)
 }
 
 func (e Builder[T, B]) NamedPlaceholder(names ...string) T {
-	var arg []any
-	for _, name := range names {
-		arg = append(arg, bob.NamedArg(name))
-	}
-	return e.Arg(arg...)
+	return e.Arg(bob.NamesToNamedArguments(names...)...)
 }
 
 func (e Builder[T, B]) Raw(query string, args ...any) T {

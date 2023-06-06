@@ -50,7 +50,7 @@ func Prepare(ctx context.Context, exec Preparer, q QueryWriter) (Stmt, error) {
 type Stmt struct {
 	stmt     Statement
 	executor Executor
-	qb       QueryBuilt
+	qb       BuildResult
 	loaders  []Loader
 }
 
@@ -84,7 +84,7 @@ func (s Stmt) query(ctx context.Context, args ...any) (scan.Rows, error) {
 }
 
 func (s Stmt) checkArgs(args ...any) ([]any, error) {
-	if qna, ok := s.qb.(QueryBuiltNamedArgs); ok {
+	if qna, ok := s.qb.(BuildResultNamedArgs); ok {
 		var err error
 		args, err = qna.NamedArgs(args...)
 		if err != nil {

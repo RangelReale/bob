@@ -7,11 +7,11 @@ import (
 
 // MustBuild builds a query and panics on error
 // useful for initializing queries that need to be reused
-func MustBuild(q QueryWriter) QueryBuilt {
+func MustBuild(q QueryWriter) BuildResult {
 	return MustBuildN(q, 1)
 }
 
-func MustBuildN(q QueryWriter, start int) QueryBuilt {
+func MustBuildN(q QueryWriter, start int) BuildResult {
 	qb, err := BuildN(q, start)
 	if err != nil {
 		panic(err)
@@ -21,12 +21,12 @@ func MustBuildN(q QueryWriter, start int) QueryBuilt {
 }
 
 // Convinient function to build query from start
-func Build(q QueryWriter) (QueryBuilt, error) {
+func Build(q QueryWriter) (BuildResult, error) {
 	return BuildN(q, 1)
 }
 
 // Convinient function to build query from a point
-func BuildN(q QueryWriter, start int) (QueryBuilt, error) {
+func BuildN(q QueryWriter, start int) (BuildResult, error) {
 	b := &bytes.Buffer{}
 	args, err := q.WriteQuery(b, start)
 	if err != nil {
@@ -43,14 +43,14 @@ func BuildN(q QueryWriter, start int) (QueryBuilt, error) {
 	}
 
 	if len(nargs) > 0 {
-		return &queryBuiltNamed{
+		return &buildResultNamed{
 			sql:   b.String(),
 			args:  args,
 			nargs: nargs,
 		}, nil
 	}
 
-	return &queryBuiltDefault{
+	return &buildResultDefault{
 		sql:  b.String(),
 		args: args,
 	}, nil

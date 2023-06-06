@@ -35,34 +35,34 @@ func (q queryWithNamedArgs) WriteQuery(w io.Writer, start int) ([]any, error) {
 	return mergeNamedArguments(nargs, args...)
 }
 
-type queryBuiltDefault struct {
+type buildResultDefault struct {
 	sql  string
 	args []any
 }
 
-func (q queryBuiltDefault) SQL() string {
+func (q buildResultDefault) SQL() string {
 	return q.sql
 }
 
-func (q queryBuiltDefault) Args() []any {
+func (q buildResultDefault) Args() []any {
 	return q.args
 }
 
-type queryBuiltNamed struct {
+type buildResultNamed struct {
 	sql   string
 	args  []any
 	nargs []NamedArgument
 }
 
-func (q queryBuiltNamed) SQL() string {
+func (q buildResultNamed) SQL() string {
 	return q.sql
 }
 
-func (q queryBuiltNamed) Args() []any {
+func (q buildResultNamed) Args() []any {
 	return q.args
 }
 
-func (q queryBuiltNamed) NamedArgs(args ...any) ([]any, error) {
+func (q buildResultNamed) NamedArgs(args ...any) ([]any, error) {
 	queryArgs, err := mergeNamedArguments(q.nargs, args...)
 	if err != nil {
 		return nil, err
@@ -71,13 +71,13 @@ func (q queryBuiltNamed) NamedArgs(args ...any) ([]any, error) {
 	return queryArgs, nil
 }
 
-func (q queryBuiltNamed) WithNamedArgs(args ...any) (QueryBuilt, error) {
+func (q buildResultNamed) WithNamedArgs(args ...any) (BuildResult, error) {
 	na, err := q.NamedArgs(args...)
 	if err != nil {
 		return nil, err
 	}
 
-	return &queryBuiltDefault{
+	return &buildResultDefault{
 		sql:  q.sql,
 		args: na,
 	}, nil

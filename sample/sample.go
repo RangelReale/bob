@@ -32,7 +32,7 @@ func main1() {
 		panic(err)
 	}
 
-	if qba, ok := qb.(bob.QueryBuiltNamedArgs); ok {
+	if qba, ok := qb.(bob.BuildResultNamedArgs); ok {
 		qb, err = qba.WithNamedArgs(map[string]any{
 			"in1": 15,
 			"in2": 200,
@@ -69,7 +69,7 @@ func main2() {
 		panic(err)
 	}
 
-	if qba, ok := qb.(bob.QueryBuiltNamedArgs); ok {
+	if qba, ok := qb.(bob.BuildResultNamedArgs); ok {
 		qb, err = qba.WithNamedArgs(map[string]any{
 			"in1": 15,
 			"in2": "LAST_NAME",
@@ -160,7 +160,7 @@ func maindb() {
 		// 	panic(err)
 		// }
 		//
-		// if qba, ok := qb.(bob.QueryBuiltNamedArgs); ok {
+		// if qba, ok := qb.(bob.BuildResultNamedArgs); ok {
 		// 	qb, err = qba.WithNamedArgs(map[string]any{
 		// 		"in1": 15,
 		// 		"in2": "LAST_NAME",

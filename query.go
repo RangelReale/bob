@@ -26,14 +26,14 @@ type Query interface {
 	QueryWriter
 }
 
-type QueryBuilt interface {
+type BuildResult interface {
 	SQL() string
 	Args() []any
 }
 
-type QueryBuiltNamedArgs interface {
+type BuildResultNamedArgs interface {
 	NamedArgs(args ...any) ([]any, error)
-	WithNamedArgs(args ...any) (QueryBuilt, error)
+	WithNamedArgs(args ...any) (BuildResult, error)
 }
 
 type Mod[T any] interface {
@@ -104,22 +104,22 @@ func (b BaseQuery[E]) WriteSQL(w io.Writer, _ Dialect, start int) ([]any, error)
 
 // MustBuild builds the query and panics on error
 // useful for initializing queries that need to be reused
-func (q BaseQuery[E]) MustBuild() QueryBuilt {
+func (q BaseQuery[E]) MustBuild() BuildResult {
 	return MustBuildN(q, 1)
 }
 
 // MustBuildN builds the query and panics on error
 // start numbers the arguments from a different point
-func (q BaseQuery[E]) MustBuildN(start int) QueryBuilt {
+func (q BaseQuery[E]) MustBuildN(start int) BuildResult {
 	return MustBuildN(q, start)
 }
 
 // Convinient function to build query from start
-func (q BaseQuery[E]) Build() (QueryBuilt, error) {
+func (q BaseQuery[E]) Build() (BuildResult, error) {
 	return BuildN(q, 1)
 }
 
 // Convinient function to build query from a point
-func (q BaseQuery[E]) BuildN(start int) (QueryBuilt, error) {
+func (q BaseQuery[E]) BuildN(start int) (BuildResult, error) {
 	return BuildN(q, start)
 }

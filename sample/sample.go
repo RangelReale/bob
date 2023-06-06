@@ -151,6 +151,8 @@ func maindb() {
 			panic(err)
 		}
 
+		// stmt, err := bdb.PrepareContext(context.Background(), prepared.SQL())
+
 		data, err := bob.All(context.Background(), bdb, prepared.Query(map[string]any{
 			"offset": items[0],
 			"limit":  items[1],

@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	main1()
+	main2()
 }
 
 func main1() {
@@ -58,7 +58,8 @@ func main1() {
 func main2() {
 	query := psql.Insert(
 		im.Into("actor", "first_name", "last_name"),
-		im.Values(psql.Arg(psql.NamedArg("in1"), psql.NamedArg("in2"))),
+		// im.Values(psql.Arg(psql.NamedArg("in1"), psql.NamedArg("in2"))),
+		im.Values(psql.ArgNamed("in1", "in2")),
 	)
 
 	prepared, err := query.BuildPrepared()
@@ -99,6 +100,7 @@ func main3() {
 		panic(err)
 	}
 
+	// struct parameters not working yet
 	args, err := prepared.Build(Main3Args{
 		FirstName: "JOHN",
 		LastName:  "CENA",
@@ -113,7 +115,7 @@ func main3() {
 	// INSERT INTO actor ("first_name", "last_name")
 	// VALUES ($1, $2)
 	//
-	// [15 LAST_NAME]
+	// [JOHN CENA]
 }
 
 func maindb() {

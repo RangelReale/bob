@@ -33,8 +33,6 @@ github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494 h1:wSmWgpuccqS2IOfmY
 github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494/go.mod h1:yipyliwI08eQ6XwDm1fEwKPdF/xdbkiHtrU+1Hg+vc4=
 github.com/shopspring/decimal v1.3.1 h1:2Usl1nmF/WZucqkFZhnfFYxxxu8LG21F6nPQBE5gKV8=
 github.com/spf13/cast v1.5.0 h1:rj3WzYc11XZaIZMPKmwP96zkFEnnAmV8s6XbB2aY32w=
-github.com/stephenafamo/bob v0.21.1 h1:rZR+eZJ9I78NWXOhsMwY9P9J6PoNjBvWICuyZA+EvN4=
-github.com/stephenafamo/bob v0.21.1/go.mod h1:l52cJg5MMwb/u+hMwsKZDadtKiG6nMfUgMoFWxYtgW0=
 github.com/stephenafamo/fakedb v0.0.0-20221230081958-0b86f816ed97 h1:XItoZNmhOih06TC02jK7l3wlpZ0XT/sPQYutDcGOQjg=
 github.com/stephenafamo/scan v0.4.2 h1:mPmOjV84VCQdlYPPX1jZZHt5LYRHAPdEe/yuSaMi92Q=
 github.com/stephenafamo/scan v0.4.2/go.mod h1:FhIUJ8pLNyex36xGFiazDJJ5Xry0UkAi+RkWRrEcRMg=

@@ -13,7 +13,7 @@ func NamedArg(name string) NamedArgument {
 	return NamedArgument{Name: name}
 }
 
-func namedArgumentMerge(nargs []NamedArgument, args any) ([]any, error) {
+func mergeNamedArguments(nargs []NamedArgument, args any) ([]any, error) {
 	var sourceArgs map[string]any
 
 	switch a := args.(type) {

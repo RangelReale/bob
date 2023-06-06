@@ -13,29 +13,30 @@ func NamedArg(name string) NamedArgument {
 	return NamedArgument{Name: name}
 }
 
-func NamedArgumentToArray(nargs []NamedArgument, args any) ([]any, error) {
-	var argMap map[string]any
+func namedArgumentMerge(nargs []NamedArgument, args any) ([]any, error) {
+	var sourceArgs map[string]any
 
-	switch xargs := args.(type) {
-	// must support struct
+	switch a := args.(type) {
 	case map[string]any:
-		argMap = xargs
+		sourceArgs = a
 	}
 
-	if argMap == nil {
+	// must try struct also
+
+	if sourceArgs == nil {
 		return nil, errors.New("unknown arguments type")
 	}
 
-	retArgs := make([]any, len(nargs))
+	mergedArgs := make([]any, len(nargs))
 	for idx, narg := range nargs {
-		carg, ok := argMap[narg.Name]
-		if !ok {
+		if carg, ok := sourceArgs[narg.Name]; ok {
+			mergedArgs[idx] = carg
+		} else {
 			return nil, fmt.Errorf("named argument '%s' not found", narg.Name)
 		}
-		retArgs[idx] = carg
 	}
 
-	return retArgs, nil
+	return mergedArgs, nil
 }
 
 func NamesToNamedArguments(names ...string) []any {

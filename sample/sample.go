@@ -27,7 +27,7 @@ func main1() {
 		sm.Where(psql.Raw("id >= ?", psql.NamedArg("id1"))),
 	)
 
-	prepared, err := query.Prepared()
+	prepared, err := query.BuildPrepared()
 	if err != nil {
 		panic(err)
 	}
@@ -61,7 +61,7 @@ func main2() {
 		im.Values(psql.Arg(psql.NamedArg("in1"), psql.NamedArg("in2"))),
 	)
 
-	prepared, err := query.Prepared()
+	prepared, err := query.BuildPrepared()
 	if err != nil {
 		panic(err)
 	}
@@ -94,7 +94,7 @@ func main3() {
 		im.Values(psql.ArgNamed("first_name", "last_name")),
 	)
 
-	prepared, err := query.Prepared()
+	prepared, err := query.BuildPrepared()
 	if err != nil {
 		panic(err)
 	}
@@ -144,7 +144,7 @@ func maindb() {
 			sm.Limit(psql.ArgNamed("limit")),
 		)
 
-		prepared, err := query.Prepared()
+		prepared, err := query.BuildPrepared()
 		if err != nil {
 			panic(err)
 		}

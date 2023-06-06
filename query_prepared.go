@@ -18,7 +18,7 @@ func (p preparedQuery) SQL() string {
 }
 
 func (p preparedQuery) Query(args any) QueryWriter {
-	queryArgs, err := NamedArgumentToArray(p.args, args)
+	queryArgs, err := namedArgumentMerge(p.args, args)
 	if err != nil {
 		return &preparedQueryWriter{err: err}
 	}
@@ -29,7 +29,7 @@ func (p preparedQuery) Query(args any) QueryWriter {
 }
 
 func (p preparedQuery) Build(args any) ([]any, error) {
-	queryArgs, err := NamedArgumentToArray(p.args, args)
+	queryArgs, err := namedArgumentMerge(p.args, args)
 	if err != nil {
 		return nil, err
 	}

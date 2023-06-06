@@ -21,20 +21,20 @@ type Statement interface {
 // retains the expected methods used by *sql.Stmt
 // This is useful when an existing *sql.Stmt is used in other places in the codebase
 func Prepare(ctx context.Context, exec Preparer, q Query) (Stmt, error) {
-	query, args, err := Build(q)
+	sqlbuilt, err := Build(q)
 	if err != nil {
 		return Stmt{}, err
 	}
 
-	stmt, err := exec.PrepareContext(ctx, query)
+	stmt, err := exec.PrepareContext(ctx, sqlbuilt.SQL())
 	if err != nil {
 		return Stmt{}, err
 	}
 
 	s := Stmt{
-		exec:    exec,
-		stmt:    stmt,
-		lenArgs: len(args),
+		executor: exec,
+		stmt:     stmt,
+		qb:       sqlbuilt,
 	}
 
 	if l, ok := q.(Loadable); ok {
@@ -48,26 +48,50 @@ func Prepare(ctx context.Context, exec Preparer, q Query) (Stmt, error) {
 
 // Stmt is similar to *sql.Stmt but implements [Queryer]
 type Stmt struct {
-	stmt    Statement
-	exec    Executor
-	lenArgs int
-	loaders []Loader
+	stmt     Statement
+	executor Executor
+	qb       QueryBuilt
+	loaders  []Loader
 }
 
 // Exec executes a query without returning any rows. The args are for any placeholder parameters in the query.
-func (s Stmt) Exec(ctx context.Context, args ...any) (sql.Result, error) {
+func (s Stmt) exec(ctx context.Context, args ...any) (sql.Result, error) {
+	args, err := s.checkArgs(args...)
+	if err != nil {
+		return nil, err
+	}
+
 	result, err := s.stmt.ExecContext(ctx, args...)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, loader := range s.loaders {
-		if err := loader.Load(ctx, s.exec, nil); err != nil {
+	return result, nil
+}
+
+func (s Stmt) query(ctx context.Context, args ...any) (scan.Rows, error) {
+	args, err := s.checkArgs(args...)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := s.query(ctx, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return rows, nil
+}
+
+func (s Stmt) checkArgs(args ...any) ([]any, error) {
+	if qna, ok := s.qb.(QueryBuiltNamedArgs); ok {
+		var err error
+		args, err = qna.WithNamedArgs(args...)
+		if err != nil {
 			return nil, err
 		}
 	}
-
-	return result, nil
+	return args, nil
 }
 
 func PrepareQuery[T any](ctx context.Context, exec Preparer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (QueryStmt[T, []T], error) {
@@ -94,7 +118,7 @@ func PrepareQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, 
 	}
 
 	qs = QueryStmt[T, Ts]{
-		Stmt:     s,
+		stmt:     s,
 		mapper:   m,
 		settings: settings,
 	}
@@ -103,16 +127,30 @@ func PrepareQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, 
 }
 
 type QueryStmt[T any, Ts ~[]T] struct {
-	Stmt
-
+	stmt     Stmt
 	mapper   scan.Mapper[T]
 	settings ExecSettings[T]
+}
+
+func (s QueryStmt[T, Ts]) Exec(ctx context.Context, args ...any) (sql.Result, error) {
+	result, err := s.stmt.exec(ctx, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, loader := range s.stmt.loaders {
+		if err := loader.Load(ctx, s.stmt.executor, nil); err != nil {
+			return nil, err
+		}
+	}
+
+	return result, err
 }
 
 func (s QueryStmt[T, Ts]) One(ctx context.Context, args ...any) (T, error) {
 	var t T
 
-	rows, err := s.stmt.QueryContext(ctx, args...)
+	rows, err := s.stmt.query(ctx, args...)
 	if err != nil {
 		return t, err
 	}
@@ -122,8 +160,8 @@ func (s QueryStmt[T, Ts]) One(ctx context.Context, args ...any) (T, error) {
 		return t, err
 	}
 
-	for _, loader := range s.loaders {
-		if err := loader.Load(ctx, s.exec, t); err != nil {
+	for _, loader := range s.stmt.loaders {
+		if err := loader.Load(ctx, s.stmt.executor, t); err != nil {
 			return t, err
 		}
 	}
@@ -138,7 +176,7 @@ func (s QueryStmt[T, Ts]) One(ctx context.Context, args ...any) (T, error) {
 }
 
 func (s QueryStmt[T, Ts]) All(ctx context.Context, args ...any) (Ts, error) {
-	rows, err := s.stmt.QueryContext(ctx, args...)
+	rows, err := s.stmt.query(ctx, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -150,8 +188,8 @@ func (s QueryStmt[T, Ts]) All(ctx context.Context, args ...any) (Ts, error) {
 
 	typedSlice := Ts(rawSlice)
 
-	for _, loader := range s.loaders {
-		if err := loader.Load(ctx, s.exec, typedSlice); err != nil {
+	for _, loader := range s.stmt.loaders {
+		if err := loader.Load(ctx, s.stmt.executor, typedSlice); err != nil {
 			return nil, err
 		}
 	}
@@ -166,7 +204,7 @@ func (s QueryStmt[T, Ts]) All(ctx context.Context, args ...any) (Ts, error) {
 }
 
 func (s QueryStmt[T, Ts]) Cursor(ctx context.Context, args ...any) (scan.ICursor[T], error) {
-	rows, err := s.stmt.QueryContext(ctx, args...)
+	rows, err := s.stmt.query(ctx, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -179,8 +217,8 @@ func (s QueryStmt[T, Ts]) Cursor(ctx context.Context, args ...any) (scan.ICursor
 				return t, err
 			}
 
-			for _, loader := range s.loaders {
-				err = loader.Load(ctx, s.exec, t)
+			for _, loader := range s.stmt.loaders {
+				err = loader.Load(ctx, s.stmt.executor, t)
 				if err != nil {
 					return t, err
 				}

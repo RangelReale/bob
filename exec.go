@@ -25,12 +25,12 @@ type Executor interface {
 }
 
 func Exec(ctx context.Context, exec Executor, q Query) (sql.Result, error) {
-	sql, args, err := Build(q)
+	sqlbuilt, err := Build(q)
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.ExecContext(ctx, sqlbuilt.SQL(), sqlbuilt.Args()...)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func One[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], o
 
 	var t T
 
-	sql, args, err := Build(q)
+	sqlbuilt, err := Build(q)
 	if err != nil {
 		return t, err
 	}
@@ -65,7 +65,7 @@ func One[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], o
 		}
 	}
 
-	t, err = scan.One(ctx, exec, m, sql, args...)
+	t, err = scan.One(ctx, exec, m, sqlbuilt.SQL(), sqlbuilt.Args()...)
 	if err != nil {
 		return t, err
 	}
@@ -100,7 +100,7 @@ func Allx[T any, Ts ~[]T](ctx context.Context, exec Executor, q Query, m scan.Ma
 		opt(&settings)
 	}
 
-	sql, args, err := Build(q)
+	sqlbuilt, err := Build(q)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func Allx[T any, Ts ~[]T](ctx context.Context, exec Executor, q Query, m scan.Ma
 		}
 	}
 
-	rawSlice, err := scan.All(ctx, exec, m, sql, args...)
+	rawSlice, err := scan.All(ctx, exec, m, sqlbuilt.SQL(), sqlbuilt.Args()...)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]
 		opt(&settings)
 	}
 
-	sql, args, err := Build(q)
+	sqlbuilt, err := Build(q)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +155,7 @@ func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]
 
 	l, ok := q.(Loadable)
 	if !ok {
-		return scan.Cursor(ctx, exec, m, sql, args...)
+		return scan.Cursor(ctx, exec, m, sqlbuilt.SQL(), sqlbuilt.Args()...)
 	}
 
 	m2 := scan.Mapper[T](func(ctx context.Context, c []string) (scan.BeforeFunc, func(any) (T, error)) {
@@ -182,5 +182,5 @@ func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]
 		}
 	})
 
-	return scan.Cursor(ctx, exec, m2, sql, args...)
+	return scan.Cursor(ctx, exec, m2, sqlbuilt.SQL(), sqlbuilt.Args()...)
 }

@@ -64,20 +64,20 @@ func RunTests(t *testing.T, cases Testcases, format FormatFunc) {
 	t.Helper()
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			sql, args, err := bob.Build(tc.Query)
+			sqlbuilt, err := bob.Build(tc.Query)
 			if err != nil {
 				t.Fatalf("error: %v", err)
 			}
-			diff, err := QueryDiff(tc.ExpectedSQL, sql, format)
+			diff, err := QueryDiff(tc.ExpectedSQL, sqlbuilt.SQL(), format)
 			if err != nil {
 				t.Fatalf("error: %v", err)
 			}
 			if diff != "" {
-				fmt.Println(sql)
-				fmt.Println(args)
+				fmt.Println(sqlbuilt.SQL())
+				fmt.Println(sqlbuilt.Args())
 				t.Fatalf("diff: %s", diff)
 			}
-			if diff := ArgsDiff(tc.ExpectedArgs, args); diff != "" {
+			if diff := ArgsDiff(tc.ExpectedArgs, sqlbuilt.Args()); diff != "" {
 				t.Fatalf("diff: %s", diff)
 			}
 		})

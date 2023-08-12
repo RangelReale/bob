@@ -183,10 +183,10 @@ func maindb2() {
 			panic(err)
 		}
 
-		data, err := stmt.All(context.Background(), map[string]any{
+		data, err := stmt.All(context.Background(), bob.NewMapBindSource(map[string]any{
 			"offset": items[0],
 			"limit":  items[1],
-		})
+		}))
 		if err != nil {
 			panic(err)
 		}

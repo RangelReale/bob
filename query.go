@@ -109,6 +109,6 @@ func (q BaseQuery[E]) BuildN(start int) (string, []any, error) {
 	return BuildN(q, start)
 }
 
-func (q BaseQuery[E]) Bind(args any) BoundQuery {
+func (q BaseQuery[E]) Bind(args BindSource) BoundQuery {
 	return BindQuery(q, args)
 }

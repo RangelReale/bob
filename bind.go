@@ -1,11 +1,24 @@
 package bob
 
 import (
+	"errors"
 	"fmt"
 	"io"
 )
 
-func replaceArgumentBindingsWithCheck(buildArgs []any, args ...any) ([]any, error) {
+func replaceArgumentBindingsWithSourceCheck(buildArgs []any, args ...any) ([]any, error) {
+	var argBinds []BindSource
+	for _, arg := range args {
+		bs, ok := arg.(BindSource)
+		if !ok {
+			return nil, errors.New("argument must be BindSource")
+		}
+		argBinds = append(argBinds, bs)
+	}
+	return replaceArgumentBindingsWithCheck(buildArgs, &listBindSource{argBinds})
+}
+
+func replaceArgumentBindingsWithCheck(buildArgs []any, argBinds BindSource) ([]any, error) {
 	var nargs []ArgumentBinding
 	hasNonBinding := false
 	for _, buildArg := range buildArgs {
@@ -16,12 +29,42 @@ func replaceArgumentBindingsWithCheck(buildArgs []any, args ...any) ([]any, erro
 		}
 	}
 	if len(nargs) == 0 {
-		return args, nil
+		return buildArgs, nil
 	}
 	if hasNonBinding {
 		return nil, fmt.Errorf("cannot mix argument bindings with other arguments")
 	}
-	return replaceArgumentBindings(nargs, args...)
+	return replaceArgumentBindings(nargs, argBinds)
+}
+
+type BindSource interface {
+	BindValue(name string) (any, bool)
+}
+
+type mapBindSource struct {
+	m map[string]any
+}
+
+func NewMapBindSource(m map[string]any) BindSource {
+	return &mapBindSource{m}
+}
+
+type listBindSource struct {
+	list []BindSource
+}
+
+func (l listBindSource) BindValue(name string) (any, bool) {
+	for _, item := range l.list {
+		if value, ok := item.BindValue(name); ok {
+			return value, true
+		}
+	}
+	return nil, false
+}
+
+func (m mapBindSource) BindValue(name string) (res any, ok bool) {
+	res, ok = m.m[name]
+	return
 }
 
 type BoundQuery interface {
@@ -42,16 +85,16 @@ type BoundQuery interface {
 	BuildN(start int) (string, []any, error)
 }
 
-func BindQuery(q Query, args any) BoundQuery {
+func BindQuery(q Query, argBinds BindSource) BoundQuery {
 	return &boundQuery{
-		q:    q,
-		args: args,
+		q:        q,
+		argBinds: argBinds,
 	}
 }
 
 type boundQuery struct {
-	q    Query
-	args any
+	q        Query
+	argBinds BindSource
 }
 
 func (q boundQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
@@ -59,7 +102,7 @@ func (q boundQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return replaceArgumentBindingsWithCheck(buildArgs, q.args)
+	return replaceArgumentBindingsWithCheck(buildArgs, q.argBinds)
 }
 
 func (q boundQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) {
@@ -67,7 +110,7 @@ func (q boundQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return replaceArgumentBindingsWithCheck(buildArgs, q.args)
+	return replaceArgumentBindingsWithCheck(buildArgs, q.argBinds)
 }
 
 // MustBuild builds the query and panics on error
